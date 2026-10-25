@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="theme-color" content="#050812">
+<title>Guerra de Cordas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;800;900&family=Rajdhani:wght@600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- Piloto reutilizável (visto de cima, de frente para o cabo) -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="man" viewBox="0 0 100 165">
+    <g stroke-linejoin="round" stroke-linecap="round">
+      <rect x="18" y="40" width="46" height="100" rx="23" fill="#0d1a2e" style="stroke:var(--c)" stroke-width="5"/>
+      <rect x="48" y="58" width="32" height="90" rx="16" fill="#0d1a2e" style="stroke:var(--c)" stroke-width="5"/>
+      <path d="M41 62v62" style="stroke:var(--c)" stroke-width="4" opacity=".7"/>
+      <circle cx="62" cy="146" r="11" style="fill:var(--c)"/>
+      <circle cx="38" cy="118" r="9" style="fill:var(--c)"/>
+      <circle cx="12" cy="58" r="9" fill="#0d1a2e" style="stroke:var(--c)" stroke-width="4"/>
+      <circle cx="46" cy="40" r="31" fill="#0a1424" style="stroke:var(--c)" stroke-width="5"/>
+      <path d="M26 48c0-9 9-14 20-14s20 5 20 14c0 7-9 11-20 11s-20-4-20-11z" style="fill:var(--c)" opacity=".92"/>
+      <path d="M32 46h28" stroke="#fff" stroke-width="3" opacity=".7"/>
+    </g>
+  </symbol>
+  <!-- Seta usada no guia de puxada -->
+  <symbol id="chev" viewBox="0 0 24 24">
+    <path d="M4 8l8 8 8-8" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/>
+  </symbol>
+</svg>
+
+<main id="app" data-me="0" data-mode="">
+  <div class="fx" aria-hidden="true"><i class="sweep"></i></div>
+
+  <!-- MENU -->
+  <section id="menu" class="screen">
+    <h1>Guerra<span>de Cordas</span></h1>
+    <div class="menu-btns">
+      <button class="btn red" id="btnLocal">Modo Local</button>
+      <button class="btn blue" id="btnOnline">Modo Online</button>
+    </div>
+    <p class="hint">Arraste o dedo (ou o mouse) em direção ao seu lado para puxar o cabo de energia. Quem fizer 3 pontos vence.</p>
+  </section>
+
+  <!-- SALAS -->
+  <section id="online" class="screen hidden">
+    <h2>MODO ONLINE</h2>
+    <div id="lobbyChoose" class="panel">
+      <button class="btn red" id="btnCreate">Criar sala</button>
+      <div class="or">ou entre em uma sala</div>
+      <input id="codeInput" maxlength="4" placeholder="CÓDIGO" autocomplete="off" autocapitalize="characters" spellcheck="false">
+      <button class="btn blue" id="btnJoin">Entrar</button>
+    </div>
+    <div id="lobbyWait" class="panel hidden">
+      <div class="small">Código da sala</div>
+      <div id="roomCode" class="code">----</div>
+      <button class="btn small-btn" id="btnCopy">Copiar código</button>
+      <button class="btn small-btn blue" id="btnShare">Enviar link de convite</button>
+      <div class="small">Aguardando o outro jogador…<br>Quem abrir o link entra direto na sala, de qualquer aparelho.</div>
+    </div>
+    <p id="status" class="status" role="status"></p>
+    <button class="btn ghost" id="btnBackMenu">Voltar</button>
+  </section>
+
+  <!-- JOGO -->
+  <section id="game" class="hidden">
+
+    <!-- Zona do adversário (em cima no retrato / à direita na horizontal) -->
+    <div class="zone opp" id="zoneOpp">
+      <div class="zone-in">
+        <div class="who" id="nameOpp">AZUL</div>
+        <div class="score" id="sOpp">0</div>
+        <div class="guide">
+          <div class="chevs" aria-hidden="true">
+            <svg><use href="#chev"/></svg><svg><use href="#chev"/></svg><svg><use href="#chev"/></svg>
+          </div>
+          <div class="label">Arraste para puxar</div>
+          <div class="kbd" id="kbdOpp"></div>
+        </div>
+      </div>
+      <i class="knob"></i>
+    </div>
+
+    <!-- Arena -->
+    <div class="arena" id="arena">
+      <div class="band"><i class="mid"></i></div>
+      <div class="rope-group" id="ropeGroup">
+        <svg class="char opp" viewBox="0 0 100 165"><use href="#man"/></svg>
+        <div class="rope"></div>
+        <svg class="marker" viewBox="0 0 100 44"><polygon points="3,22 50,3 97,22 50,41" fill="#ffe14a" stroke="#fff" stroke-width="3" stroke-linejoin="round"/></svg>
+        <svg class="char me" viewBox="0 0 100 165"><use href="#man"/></svg>
+      </div>
+      <button class="close" id="btnClose" aria-label="Sair">&times;</button>
+      <div class="ping hidden" id="ping"><i></i><b id="pingMs">--</b></div>
+    </div>
+
+    <!-- Minha zona (embaixo no retrato / à esquerda na horizontal) -->
+    <div class="zone me" id="zoneMe">
+      <div class="zone-in">
+        <div class="who" id="nameMe">VERMELHO</div>
+        <div class="score" id="sMe">0</div>
+        <div class="guide">
+          <div class="chevs" aria-hidden="true">
+            <svg><use href="#chev"/></svg><svg><use href="#chev"/></svg><svg><use href="#chev"/></svg>
+          </div>
+          <div class="label">Arraste para puxar</div>
+          <div class="kbd" id="kbdMe"></div>
+        </div>
+      </div>
+      <i class="knob"></i>
+    </div>
+
+    <div id="overlay" class="overlay hidden">
+      <div id="ovText" class="ov-text"></div>
+      <div id="ovBtns" class="ov-btns hidden">
+        <button class="btn red" id="btnAgain">Jogar de novo</button>
+        <button class="btn ghost" id="btnMenu">Menu</button>
+      </div>
+    </div>
+  </section>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/peerjs@1.5.4/dist/peerjs.min.js"></script>
+<script src="script.js"></script>
+</body>
+</html>
